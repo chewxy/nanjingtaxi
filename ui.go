@@ -1,8 +1,8 @@
 package main
 
 import (
-	"strings"
 	"fmt"
+	"strings"
 )
 
 func (c *client) uiloop() {

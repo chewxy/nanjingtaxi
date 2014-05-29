@@ -1,37 +1,35 @@
 package main
 
 import (
-	"github.com/chewxy/nanjingtaxi/kademlia"
 	"code.google.com/p/go-uuid/uuid"
 	"github.com/agl/pond/bbssig"
+	"github.com/chewxy/nanjingtaxi/kademlia"
 	"github.com/vmihailenco/msgpack"
 
-	"net"
-	"log"
-	"os"
 	"fmt"
-	"time"
 	"io/ioutil"
+	"log"
+	"net"
+	"os"
+	"time"
 
 	// "crypto/rsa"
 	"crypto/rand"
-	"crypto/sha1"
 	"crypto/rsa"
+	"crypto/sha1"
 	// "crypto/x509"
 	"encoding/pem"
 )
 
-
 type chatroom struct {
-	ID string
+	ID   string
 	Name string
 
 	participants map[string]*net.UDPAddr
-	publicKeys map[string]*rsa.PublicKey
-
+	publicKeys   map[string]*rsa.PublicKey
 
 	groupPrivateKey *bbssig.PrivateKey
-	groupPublicKey *bbssig.Group
+	groupPublicKey  *bbssig.Group
 
 	memberPrivateKey *bbssig.MemberKey
 
@@ -55,7 +53,7 @@ func createChatroom() *chatroom {
 
 	if err != nil {
 		log.Fatalf("Create Chatroom: Error while generating member key: %s", err)
-		panic("Error!")	
+		panic("Error!")
 	}
 
 	chatRoom := newChatroom(id, groupPriv, groupPriv.Group, memberPriv)
@@ -65,12 +63,12 @@ func createChatroom() *chatroom {
 }
 
 func newChatroom(id string, groupKey *bbssig.PrivateKey, groupPublicKey *bbssig.Group, memberKey *bbssig.MemberKey) *chatroom {
-	return &chatroom {
-		ID: id,
+	return &chatroom{
+		ID:           id,
 		participants: make(map[string]*net.UDPAddr),
 
-		groupPrivateKey: groupKey,
-		groupPublicKey: groupPublicKey,
+		groupPrivateKey:  groupKey,
+		groupPublicKey:   groupPublicKey,
 		memberPrivateKey: memberKey,
 
 		trustedPeers: make([]*kademlia.RemoteNode, 0),
@@ -82,9 +80,9 @@ func newChatroom(id string, groupKey *bbssig.PrivateKey, groupPublicKey *bbssig.
 // exports the keys of a chatroom.
 func (room *chatroom) ExportKeys() {
 	// public key of the room
-	publicFilename :=  fmt.Sprintf("chatrooms/%s_public.pem", room.ID)
+	publicFilename := fmt.Sprintf("chatrooms/%s_public.pem", room.ID)
 	publicPemFile, err := os.Create(publicFilename)
-	
+
 	if err != nil {
 		log.Fatalf("Failed to open %s_public.pem for writing: %s", room.ID, err)
 		return
@@ -92,11 +90,10 @@ func (room *chatroom) ExportKeys() {
 	pem.Encode(publicPemFile, &pem.Block{Type: "GROUP PUBLIC KEY", Bytes: room.groupPrivateKey.Group.Marshal()})
 	publicPemFile.Close()
 
-
 	// private key of the room - this is the key that allows creation of new members
-	privateFilename :=  fmt.Sprintf("chatrooms/%s_private.pem", room.ID)
+	privateFilename := fmt.Sprintf("chatrooms/%s_private.pem", room.ID)
 	privatePemFile, err := os.Create(privateFilename)
-	
+
 	if err != nil {
 		log.Fatalf("Failed to open %s_private.pem for writing: %s", room.ID, err)
 		return
@@ -104,11 +101,10 @@ func (room *chatroom) ExportKeys() {
 	pem.Encode(privatePemFile, &pem.Block{Type: "GROUP PRIVATE KEY", Bytes: room.groupPrivateKey.Marshal()})
 	privatePemFile.Close()
 
-
 	// a member's private key
 	memberFileName := fmt.Sprintf("keys/%s_member.pem", room.ID)
 	memberPemFile, err := os.Create(memberFileName)
-	
+
 	if err != nil {
 		log.Fatalf("Failed to open %s_member.pem for writing: %s", room.ID, err)
 		return
@@ -117,12 +113,11 @@ func (room *chatroom) ExportKeys() {
 	memberPemFile.Close()
 }
 
-
 // RequestRoom sends a message via the Kademlia network, looking for nodes with the chatroom ID
 func (c *client) RequestRoom(ID string) {
 	// find a node with the chatroom id first
 	tmpRemote := c.Network.Node.GetNearestNode()
-	log.Printf("Nearest Node is: %#v\n", tmpRemote.ID )
+	log.Printf("Nearest Node is: %#v\n", tmpRemote.ID)
 
 	if tmpRemote == nil {
 		c.ui <- "...No remote node found" // typically because well, the client is not connected to the kademlia network.
@@ -140,7 +135,7 @@ func (c *client) RequestRoom(ID string) {
 	}
 
 	var id kademlia.NodeID
-	tmp := <- ch
+	tmp := <-ch
 	asBytes, ok := tmp.([]byte)
 
 	if !ok {
@@ -155,8 +150,6 @@ func (c *client) RequestRoom(ID string) {
 
 	// found the ID? get the remoteNode so we can send it a message asking for a challenge
 	remote := c.Network.Node.GetNode(id)
-
-
 
 	// get the relevant room settings - member key
 	memberFileName := fmt.Sprintf("keys/%s_member.pem", ID)
@@ -218,10 +211,6 @@ func (c *client) RequestRoom(ID string) {
 	chatRoom.groupPublicKey = group
 	chatRoom.memberPrivateKey = memberPriv
 
-
-
-
-
 	// send message
 	message, token := kademlia.NewMessage()
 	message.MessageType = "REQUEST_ROOM"
@@ -232,9 +221,8 @@ func (c *client) RequestRoom(ID string) {
 
 	// register things with the token so the reply knows wtf is going on
 	c.Network.AwaitingResponse[token] = time.Now()
-	c.Network.ExtraInfo[token] = ID	
+	c.Network.ExtraInfo[token] = ID
 }
-
 
 // issueChallenge is a kademlia.ResponseFunc, hence the elaborate signature
 // remote is the address on the envelope (i.e. the room requester)
@@ -258,7 +246,7 @@ func (c *client) issueChallenge(remote *kademlia.RemoteNode, token string, sourc
 
 type answerPacket struct {
 	ChallengeAnswer string
-	Port int
+	Port            int
 }
 
 func answerChallenge(message string, memberKey *bbssig.MemberKey) string {
@@ -302,12 +290,11 @@ func (c *client) challengeResponse(remote *kademlia.RemoteNode, token string, so
 	c.Network.AwaitingResponse[token] = time.Now()
 }
 
-
 type validChallengeResponse struct {
-	ChatroomID string
-	PrivateKey []byte
-	Name string
-	Port int
+	ChatroomID   string
+	PrivateKey   []byte
+	Name         string
+	Port         int
 	Participants map[string]*net.UDPAddr
 }
 
@@ -329,7 +316,6 @@ func (c *client) verifyChallengeResponse(remote *kademlia.RemoteNode, token stri
 	if err != nil {
 		// shit - TODO
 	}
-	
 
 	chatRoomID, ok := c.Network.ExtraInfo[token].(string)
 	if !ok {
@@ -341,8 +327,8 @@ func (c *client) verifyChallengeResponse(remote *kademlia.RemoteNode, token stri
 
 	if valid {
 		// send group private key to user
-		groupPriv := pem.EncodeToMemory(&pem.Block{Type: "GROUP PRIVATE KEY", Bytes: chatRoom.groupPrivateKey.Marshal()})	
-		
+		groupPriv := pem.EncodeToMemory(&pem.Block{Type: "GROUP PRIVATE KEY", Bytes: chatRoom.groupPrivateKey.Marshal()})
+
 		r := c.Network.Node.GetNode(source)
 		if r == nil {
 			// shit
@@ -371,7 +357,7 @@ func (c *client) verifyChallengeResponse(remote *kademlia.RemoteNode, token stri
 	message.SourceID = c.Network.Node.ID
 	message.Token = token
 
-	kademlia.SendMsg(c.Network.Connection, remote.Address, message)	
+	kademlia.SendMsg(c.Network.Connection, remote.Address, message)
 
 }
 
@@ -405,7 +391,7 @@ func (c *client) receiveGroupPrivateKey(remote *kademlia.RemoteNode, token strin
 	chatRoomID, ok := chatRoomIDIface.(string)
 	if !ok {
 		panic("chatroomID not a string??!")
-	}	
+	}
 	chatRoom, ok := c.chatroomsID[chatRoomID]
 	if !ok {
 		c.ui <- "...No chatroom found"
@@ -449,7 +435,7 @@ func (c *client) receiveGroupPrivateKey(remote *kademlia.RemoteNode, token strin
 	chatRoom.participants[string(source)] = &newAddress
 
 	// fixes  it so that the local node is 0.0.0.0:xxxx - this is an issue only in OS X,  doesn't matter what the self-IP is for linux
-	chatRoom.participants[string(c.Node.ID)] = localAddr 
+	chatRoom.participants[string(c.Node.ID)] = localAddr
 
 	c.chatroomsName[valid.Name] = chatRoom
 
@@ -457,17 +443,16 @@ func (c *client) receiveGroupPrivateKey(remote *kademlia.RemoteNode, token strin
 	c.Network.LocalStore(chatRoom.ID, c.Node.ID)
 }
 
-// Generates pem files and stores them in invites/. 
+// Generates pem files and stores them in invites/.
 func (room *chatroom) GenerateInvite() {
 	newMember, err := room.groupPrivateKey.NewMember(rand.Reader)
 	if err != nil {
 		// shit
 	}
 
-
-	publicFilename :=  fmt.Sprintf("invites/%s_public.pem", room.ID)
+	publicFilename := fmt.Sprintf("invites/%s_public.pem", room.ID)
 	publicPemFile, err := os.Create(publicFilename)
-	
+
 	if err != nil {
 		log.Fatalf("Failed to open %s_public.pem for writing: %s", room.ID, err)
 		return
@@ -475,10 +460,9 @@ func (room *chatroom) GenerateInvite() {
 	pem.Encode(publicPemFile, &pem.Block{Type: "GROUP PUBLIC KEY", Bytes: room.groupPrivateKey.Group.Marshal()})
 	publicPemFile.Close()
 
-
 	memberFileName := fmt.Sprintf("invites/%s_member.pem", room.ID)
 	memberPemFile, err := os.Create(memberFileName)
-	
+
 	if err != nil {
 		log.Fatalf("Failed to open %s_member.pem for writing: %s", room.ID, err)
 		return

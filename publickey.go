@@ -7,7 +7,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"io/ioutil"
-	
 
 	"log"
 	"os"
@@ -15,11 +14,11 @@ import (
 )
 
 func bootstrapCrypto() (priv *rsa.PrivateKey, err error) {
-	
+
 	key, err := ioutil.ReadFile("pem.pem")
-	
+
 	if err != nil {
-		priv, err = keygen() 
+		priv, err = keygen()
 		if err != nil {
 			return
 		}

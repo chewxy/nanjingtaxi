@@ -4,51 +4,49 @@ import (
 	"github.com/chewxy/nanjingtaxi/kademlia"
 	"github.com/kr/pretty"
 
+	"bufio"
 	"fmt"
+	"log"
+	"net"
 	"os"
 	"strconv"
-	"log"
-	"bufio"
-	"net"
 	"strings"
 
 	"crypto/rsa"
 )
 
-type client struct{
-	Node *kademlia.Node
+type client struct {
+	Node    *kademlia.Node
 	Network *kademlia.Kademlia
 
-	port int
+	port       int
 	connection *net.UDPConn
 
-	packets chan packet
+	packets  chan packet
 	messages chan Message
-	kill chan bool
+	kill     chan bool
 
 	ui chan string
 
-	privateKey *rsa.PrivateKey
-	chatroomsID map[string]*chatroom
+	privateKey    *rsa.PrivateKey
+	chatroomsID   map[string]*chatroom
 	chatroomsName map[string]*chatroom
-
 }
 
 func newClient() *client {
 	return &client{
 		Node: kademlia.NewNode(),
 
-		packets: make(chan packet),
+		packets:  make(chan packet),
 		messages: make(chan Message),
-		kill: make(chan bool),
+		kill:     make(chan bool),
 
 		ui: make(chan string),
 
-		chatroomsID: make(map[string]*chatroom),
+		chatroomsID:   make(map[string]*chatroom),
 		chatroomsName: make(map[string]*chatroom),
 	}
 }
-
 
 func (c *client) inputloop() {
 	reader := bufio.NewReader(os.Stdin)
@@ -65,7 +63,7 @@ func (c *client) inputloop() {
 			c.ui <- "Address:"
 			argAddr, _ := reader.ReadString('\n')
 			argAddr = strings.TrimSpace(argAddr)
-			
+
 			c.connectToNetwork(argAddr)
 		case "nodes":
 			c.ui <- "Nodes"
@@ -94,7 +92,7 @@ func (c *client) inputloop() {
 			chatRoom.Name = argName
 			c.chatroomsID[chatRoom.ID] = chatRoom
 			c.chatroomsName[argName] = chatRoom
-			
+
 			// add own address to participants
 			c.ui <- "...Updating Chatroom..."
 			lA := c.connection.LocalAddr()
@@ -147,7 +145,7 @@ func (c *client) inputloop() {
 			chatRoom.GenerateInvite()
 			c.ui <- "...Done Generating Invite."
 		}
-	
+
 	}
 }
 
@@ -183,7 +181,6 @@ func main() {
 	c.Network.ResponseHandler["CHALLENGE"] = c.challengeResponse
 	c.Network.ResponseHandler["CHALLENGE_RESPONSE"] = c.verifyChallengeResponse
 	c.Network.ResponseHandler["GROUP_PRIVATE_KEY"] = c.receiveGroupPrivateKey
-
 
 	go c.Network.Run()
 

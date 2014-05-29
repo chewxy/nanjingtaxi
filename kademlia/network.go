@@ -1,30 +1,26 @@
 package kademlia
 
 import (
+	"fmt"
+	"log"
 	"net"
 	"time"
-	"log"
-	"fmt"
 
-
-	"github.com/vmihailenco/msgpack"
 	"code.google.com/p/go-uuid/uuid"
+	"github.com/vmihailenco/msgpack"
 )
 
-
 type packet struct {
-	bytes []byte
+	bytes         []byte
 	returnAddress *net.UDPAddr
 }
-
-
 
 // this is exported to allow for new query types although now only the 4 basic kademlia queries will be allowed
 type Message struct {
 	MessageType string
-	SourceID NodeID
-	Token string
-	Message interface{}
+	SourceID    NodeID
+	Token       string
+	Message     interface{}
 }
 
 func NewMessage() (Message, string) {
@@ -40,7 +36,6 @@ func (msg *Message) InsertMessage(message interface{}) {
 	msg.Message = marshalled
 }
 
-
 func SendMsg(conn *net.UDPConn, returnAddress *net.UDPAddr, msg Message) {
 	b, err := msgpack.Marshal(msg)
 	if err != nil {
@@ -52,14 +47,6 @@ func SendMsg(conn *net.UDPConn, returnAddress *net.UDPAddr, msg Message) {
 		log.Fatalf("FAILED TO WRITE %d BYTES. Reason: %v", bytesWritten, networkErr)
 	}
 }
-
-
-
-
-
-
-
-
 
 func (dht *Kademlia) initNetwork() {
 	address := fmt.Sprintf(":%d", dht.Node.Port)
@@ -95,13 +82,13 @@ func (dht *Kademlia) readFromSocket() {
 			select {
 			case dht.packets <- pack:
 				continue
-			case <- dht.kill:
+			case <-dht.kill:
 				break
 			}
 		}
 
 		select {
-		case <- dht.kill:
+		case <-dht.kill:
 			break
 		default:
 			continue
@@ -111,7 +98,7 @@ func (dht *Kademlia) readFromSocket() {
 
 func (dht *Kademlia) processPackets() {
 	// packets are all Messages as a byte array. processPacket() basically verifies this, and errors out if weird shit packets comes in
-	for pack := range  dht.packets {
+	for pack := range dht.packets {
 		var msg Message
 		err := msgpack.Unmarshal(pack.bytes, &msg)
 		if err != nil {
@@ -137,7 +124,6 @@ func (dht *Kademlia) handleMessages() {
 		}
 
 		dht.pendingQueries[msg.Token] = time.Now()
-
 
 		f, ok := dht.ResponseHandler[msg.MessageType]
 		if !ok {

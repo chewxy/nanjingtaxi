@@ -1,10 +1,10 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"net"
 	"time"
-	"log"
-	"fmt"
 
 	"github.com/vmihailenco/msgpack"
 )
@@ -18,16 +18,15 @@ const (
 )
 
 type packet struct {
-	bytes []byte
+	bytes         []byte
 	returnAddress *net.UDPAddr
 }
 
 type Message struct {
-	Type MessageType
+	Type        MessageType
 	Destination string // roomID
-	Message []byte
+	Message     []byte
 }
-
 
 func (c *client) connectToNetwork(address string) {
 	addr, _ := net.ResolveUDPAddr("udp", address)
@@ -51,7 +50,6 @@ func (c *client) connectToNetwork(address string) {
 	go c.Network.FindNode(remote, c.Node.ID)
 	return
 }
-
 
 func (c *client) initNetwork() {
 	address := fmt.Sprintf(":%d", c.port)
@@ -88,13 +86,13 @@ func (c *client) readFromSocket() {
 			select {
 			case c.packets <- pack:
 				continue
-			case <- c.kill:
+			case <-c.kill:
 				break
 			}
 		}
 
 		select {
-		case <- c.kill:
+		case <-c.kill:
 			break
 		default:
 			continue
@@ -103,7 +101,7 @@ func (c *client) readFromSocket() {
 }
 
 func (c *client) processPackets() {
-	for pack := range  c.packets {
+	for pack := range c.packets {
 		var msg Message
 		err := msgpack.Unmarshal(pack.bytes, &msg)
 		if err != nil {
@@ -131,7 +129,6 @@ func (c *client) processMessages() {
 	}
 }
 
-
 func sendMsg(conn *net.UDPConn, returnAddress *net.UDPAddr, msg Message) {
 	b, err := msgpack.Marshal(msg)
 	if err != nil {
@@ -153,9 +150,9 @@ func (c *client) Send(id string, message string) {
 	}
 
 	msg := Message{
-		Type: TextMessage,
-		Destination:  room.ID,
-		Message: []byte(message),
+		Type:        TextMessage,
+		Destination: room.ID,
+		Message:     []byte(message),
 	}
 
 	rA := c.connection.LocalAddr()

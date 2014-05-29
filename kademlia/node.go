@@ -1,17 +1,17 @@
 package kademlia
 
 import (
-	"crypto/rand"
 	"container/list"
+	"crypto/rand"
 	"log"
 	"net"
 	"time"
 )
 
 const (
-	ID_SIZE int = 20
+	ID_SIZE     int = 20
 	BUCKET_SIZE int = 20
-	K = 8
+	K               = 8
 )
 
 type NodeID []byte
@@ -40,14 +40,14 @@ func (id NodeID) String() string {
 func (id NodeID) DistanceTo(cmp NodeID) NodeID {
 	res := newEmptyNodeID()
 	log.Printf("CMP Length: %d %d %d\n", len(cmp), len(res), len(id))
-	for i:=0; i < ID_SIZE; i++ {
+	for i := 0; i < ID_SIZE; i++ {
 		res[i] = id[i] ^ cmp[i]
 	}
 	return res
 }
 
 func (id NodeID) EqualsTo(cmp NodeID) bool {
-	for i:=0; i < ID_SIZE; i++ {
+	for i := 0; i < ID_SIZE; i++ {
 		if id[i] != cmp[i] {
 			return false
 		}
@@ -55,9 +55,8 @@ func (id NodeID) EqualsTo(cmp NodeID) bool {
 	return true
 }
 
-
 func (id NodeID) LessThan(cmp NodeID) bool {
-	for i:=0; i < ID_SIZE; i++ {
+	for i := 0; i < ID_SIZE; i++ {
 		if id[i] < cmp[i] {
 			return true
 		}
@@ -69,54 +68,51 @@ func (id NodeID) GetBucketID() int {
 	for i := 0; i < ID_SIZE; i++ {
 		for j := 0; j < 8; j++ {
 			if (id[i] >> uint8(7-j) & uint8(1)) != 0 { // TODO: check if bitshift makes sense
-				return i * 8 + j
+				return i*8 + j
 			}
 		}
 	}
-	return ID_SIZE * 8 - 1
+	return ID_SIZE*8 - 1
 }
-
 
 // a routingTable is just the buckets as per the original kademlia spec
 // we use the "list" package because it's a double linked list, saves time from having to write one myself
 // each routing table has an array of list, one list for each bit.
 // using a double linked list allows for a very easy update function for the routing table
-type routingTable [ID_SIZE*8]*list.List
+type routingTable [ID_SIZE * 8]*list.List
 
 func newRoutingTable() *routingTable {
 	var rt routingTable
-	for i := 0; i < ID_SIZE * 8; i++ {
+	for i := 0; i < ID_SIZE*8; i++ {
 		rt[i] = list.New()
 	}
 	return &rt
 }
 
-
 type RemoteNode struct {
-	ID NodeID
-	Address *net.UDPAddr
+	ID            NodeID
+	Address       *net.UDPAddr
 	lastResponded time.Time
-	verifiedBy []*RemoteNode
+	verifiedBy    []*RemoteNode
 
 	hasKey map[string]bool
 }
 
 func newRemoteNode(ID NodeID, addr *net.UDPAddr) *RemoteNode {
-	return &RemoteNode {
-		ID: ID,
-		Address: addr,
+	return &RemoteNode{
+		ID:         ID,
+		Address:    addr,
 		verifiedBy: make([]*RemoteNode, 0),
 
 		hasKey: make(map[string]bool),
 	}
 }
 
-
 type Node struct {
-	ID NodeID
-	IP string
-	Port int
-	RoutingTable *routingTable
+	ID            NodeID
+	IP            string
+	Port          int
+	RoutingTable  *routingTable
 	AddressToNode map[string]*RemoteNode
 
 	Store map[string]interface{}
@@ -124,16 +120,16 @@ type Node struct {
 
 func NewNode() *Node {
 	return &Node{
-		ID: newNodeID(),
-		RoutingTable: newRoutingTable(),
+		ID:            newNodeID(),
+		RoutingTable:  newRoutingTable(),
 		AddressToNode: make(map[string]*RemoteNode),
 
-		Store : make(map[string]interface{}),
+		Store: make(map[string]interface{}),
 	}
 }
 
 // R
-func (node Node) GetNodeFromAddress(address string) (remote *RemoteNode, exists bool)  {
+func (node Node) GetNodeFromAddress(address string) (remote *RemoteNode, exists bool) {
 	if address == "" {
 		panic("No Address")
 	}
@@ -151,12 +147,11 @@ func (node Node) GetNodeFromAddress(address string) (remote *RemoteNode, exists 
 	return
 }
 
-
 // C & U
 func (node Node) Update(cmp *RemoteNode) {
 	bucketID := node.ID.DistanceTo(cmp.ID).GetBucketID()
 	bucket := node.RoutingTable[bucketID]
-	
+
 	var found bool = false
 	var foundElement *list.Element
 
@@ -232,7 +227,7 @@ func (node Node) Delete(remote *RemoteNode) {
 	}
 }
 
-func (node Node) GetNClosestNodes(target NodeID, n int) []*RemoteNode{
+func (node Node) GetNClosestNodes(target NodeID, n int) []*RemoteNode {
 	bucketID := target.DistanceTo(node.ID).GetBucketID()
 	bucket := node.RoutingTable[bucketID]
 
@@ -250,21 +245,20 @@ func (node Node) GetNClosestNodes(target NodeID, n int) []*RemoteNode{
 	if len(retVal) < n {
 		// then we need more. so we iterate through the rest of the buckets
 		goto lookaheadandback
-	}  else {
+	} else {
 		if len(retVal) > n {
 			retVal = retVal[:n] // trim to the required size
 		}
 		return retVal
 	}
 
-
-// this goto block is just for organizational purposes
+	// this goto block is just for organizational purposes
 lookaheadandback:
-	for i := 1; (len(retVal) < n) && (bucketID - i >= 0 || bucketID + i <  ID_SIZE * 8); i++ {
-		if bucketID + i < ID_SIZE * 8 {
+	for i := 1; (len(retVal) < n) && (bucketID-i >= 0 || bucketID+i < ID_SIZE*8); i++ {
+		if bucketID+i < ID_SIZE*8 {
 			// look ahead i buckets
 
-			lookAheadBucket := node.RoutingTable[bucketID + i]
+			lookAheadBucket := node.RoutingTable[bucketID+i]
 			for elem := lookAheadBucket.Front(); elem != nil; elem = elem.Next() {
 				e, ok := elem.Value.(*RemoteNode)
 				if !ok {
@@ -279,11 +273,10 @@ lookaheadandback:
 			break
 		}
 
-
-		if bucketID - i >= 0 {
+		if bucketID-i >= 0 {
 			// look back i buckets
 
-			lookBackBucket := node.RoutingTable[bucketID - i]
+			lookBackBucket := node.RoutingTable[bucketID-i]
 			for elem := lookBackBucket.Front(); elem != nil; elem = elem.Next() {
 				e, ok := elem.Value.(*RemoteNode)
 				if !ok {
