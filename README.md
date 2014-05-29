@@ -46,6 +46,13 @@ These are the commands available. Follow the prompts after typing in the command
 * **invite** - create invite to a chatroom
 * **send** - send message to a chatroom
 
+##Tested On##
+
+* Ubuntu 12.04
+* OS X 10.9
+* Ubuntu 13.10
+* Ubuntu 14.04
+
 ##Limitations##
 
 * I don't think the private key transmission is too secure
@@ -58,6 +65,9 @@ These are the commands available. Follow the prompts after typing in the command
 
 * **Why is it called Nanjing Taxi?** It's because I was inspired by a rather ridiculous taxi driver who juggled 4 different communication networks while driving me in Nanjing. I wrote a write up to this app here: [The Nanjing Taxi](http://blog.chewxy.com/2014/05/30/the-nanjing-taxi/)
 * **Why do you think this is cool?** I like distributed stuff. The lack of a need for a central server? No logins? What's not to like.
-* **Why is this useful** I don't know. Do you ever have a need to securely communicate with other people?
+* **Why is this useful?** I don't know. Do you ever have a need to securely communicate with other people?
 * **Will there be improvements to this? Like NAT traversal and stuff? You know, to make it useful?** I am not sure and I cannot commit to a schedule. My life is kinda hectic right now. Feel free to send a pull request. 
-* **Your code sucks**, well, I wrote it in a hotel room during my holiday. It's a hackjob.
+* **Your code sucks**, well, I wrote it in a hotel room during my holiday. It's a hackjob. Of course there are no tests.
+
+##Open Source Stuff##
+This code is open source. Please feel free to hack on it, and if you want to contribute, send a pull request. It's MIT licenced.
