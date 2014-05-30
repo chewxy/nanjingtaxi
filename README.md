@@ -46,6 +46,31 @@ These are the commands available. Follow the prompts after typing in the command
 * **invite** - create invite to a chatroom
 * **send** - send message to a chatroom
 
+###Typical Flow###
+
+If you're creating a room:
+
+1. `./nanjingtaxi 13370 12345` - 13370 is the port that will be used to connect to Kademlia. 12345 is the communications port.
+2. `cx` - issues a connection command. A prompt for the target IP will come up. You need to know an IP:Port combination that is already on the Kademlia network
+3. `new` - creates a new room. It will prompt you for a user friendly name for the room. Then it will generate 3 keys: **chatrooms/<roomID>_public.pem**, **chatrooms/<roomID>_private.pem** and **keys/<roomID>_member.pem**. These keys are used for challenge-replies
+4. To invite people to the room, `invite`. It will generate 2 keys: **invites/<roomID>_member.pem** and **invites/<roomID>_public.pem**. Distribute this key to the person you're inviting (preferably in a secure manner).
+
+If you're joining a room:
+
+1. `./nanjingtaxi 13370 12345`
+2. `cx`
+3. Place the given **<roomID>_public.pem** file in the `chatrooms/` directory. **<roomID>_member.pem** is to be placed in `keys/`.
+4. `join` - supply the room ID, authentication will be done and you'll be ready to chat.
+
+To chat:
+
+1. `send` - follow the prompts, enter the room ID.
+
+###Room ID###
+
+Room IDs are UUID4s.
+
+
 ##Tested On##
 
 * Ubuntu 12.04
