@@ -3,6 +3,8 @@ nanjingtaxi
 
 Nanjing Taxi is a relatively secure distributed P2P chat system. It uses a distributed hash table in the form of a Kademlia network to "host" chatrooms. Clients connect to the network to find a chatroom. Once a client finds its chatroom, the connections in the chatroom is separate from the Kademlia network.
 
+I have been made to understand that this system is extremely similar to the one proposed by the BitTorrent team - BitTorrent Chat. The [basic idea](http://blog.bittorrent.com/2013/12/19/update-on-bittorrent-chat/) is similar.
+
 The way Nanjing Taxi works is like this:
 
 1. Client connects to a Kademlia network
