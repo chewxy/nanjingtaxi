@@ -66,9 +66,9 @@ func (id NodeID) LessThan(cmp NodeID) bool {
 
 func (id NodeID) GetBucketID() int {
 	for i := 0; i < ID_SIZE; i++ {
-		for j := 0; j < 8; j++ {
-			if (id[i] >> uint8(7-j) & uint8(1)) != 0 { // TODO: check if bitshift makes sense
-				return i*8 + j
+		for j := 7; j >= 0; j-- {
+			if (id[i] >> uint8(j) & 0x1) != 0 { // TODO: check if bitshift makes sense
+				return ID_SIZE*8 - 1 - (i*8 + 7 - j)
 			}
 		}
 	}
