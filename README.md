@@ -20,7 +20,7 @@ The way Nanjing Taxi works is like this:
     d. Client will respond to the challenge
     e. If response is valid, the room's private key is distributed to the Client, allowing Client to create invites.
 
-##Explanation In Images##
+## Explanation In Images ##
 ![first](http://i.imgur.com/dImpsiA.jpg)
 
 This is how the network looks like after a node joins the Kademlia network. We're the blue node on the lower right. Blue nodes are participants of a chatroom.
@@ -30,7 +30,7 @@ This is how the network looks like after a node joins the Kademlia network. We'r
 This is how the network looks like after the node requests a chatroom. All the nodes in the chatroom are now connected separately from the Kademlia network.
 
 
-##To Use##
+## To Use ##
 
 ```
 user@host: ~/location/of/project$ go build .
@@ -48,7 +48,7 @@ These are the commands available. Follow the prompts after typing in the command
 * **invite** - create invite to a chatroom
 * **send** - send message to a chatroom
 
-###Typical Flow###
+### Typical Flow ###
 
 If you're creating a room:
 
@@ -68,19 +68,19 @@ To chat:
 
 1. `send` - follow the prompts, enter the room ID.
 
-###Room ID###
+### Room ID ###
 
 Room IDs are UUID4s.
 
 
-##Tested On##
+## Tested On ##
 
 * Ubuntu 12.04
 * OS X 10.9
 * Ubuntu 13.10
 * Ubuntu 14.04
 
-##Limitations##
+## Limitations ##
 
 * I don't think the private key transmission is too secure
 * Works on simple LANs. Untested on more complex network structures.
@@ -88,7 +88,7 @@ Room IDs are UUID4s.
 * Crappy interface.
 * Doesn't have an indication of who sent the message, just the message (easily rectified).
 
-##Misc##
+## Misc ##
 
 * **Why is it called Nanjing Taxi?** It's because I was inspired by a rather ridiculous taxi driver who juggled 4 different communication networks while driving me in Nanjing. I wrote a write up to this app here: [The Nanjing Taxi](http://blog.chewxy.com/2014/05/30/the-nanjing-taxi/)
 * **Why do you think this is cool?** I like distributed stuff. The lack of a need for a central server? No logins? What's not to like.
@@ -96,5 +96,5 @@ Room IDs are UUID4s.
 * **Will there be improvements to this? Like NAT traversal and stuff? You know, to make it useful?** I am not sure and I cannot commit to a schedule. My life is kinda hectic right now. Feel free to send a pull request. 
 * **Your code sucks**, well, I wrote it in a hotel room during my holiday. It's a hackjob. Of course there are no tests.
 
-##Open Source Stuff##
+## Open Source Stuff ##
 This code is open source. Please feel free to hack on it, and if you want to contribute, send a pull request. It's MIT licenced.
