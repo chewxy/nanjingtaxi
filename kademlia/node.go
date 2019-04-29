@@ -327,7 +327,7 @@ func (node Node) GetNearestNode() *RemoteNode {
 	return nil
 }
 
-// spring clean basically purges the AddressToNode map, and refils it.
+// spring clean basically purges the AddressToNode map, and refills it.
 // spring cleaning should ideally happen every 10 minutes or so
 func (node Node) SpringClean() {
 	node.AddressToNode = make(map[string]*RemoteNode)
