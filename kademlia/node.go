@@ -57,11 +57,11 @@ func (id NodeID) EqualsTo(cmp NodeID) bool {
 
 func (id NodeID) LessThan(cmp NodeID) bool {
 	for i := 0; i < ID_SIZE; i++ {
-		if id[i] < cmp[i] {
-			return true
+		if id[i] > cmp[i] {
+			return false
 		}
 	}
-	return false
+	return true
 }
 
 func (id NodeID) GetBucketID() int {
