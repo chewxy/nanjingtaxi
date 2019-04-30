@@ -1,9 +1,9 @@
 package main
 
 import (
-	"code.google.com/p/go-uuid/uuid"
 	"github.com/agl/pond/bbssig"
 	"github.com/chewxy/nanjingtaxi/kademlia"
+	"github.com/google/uuid"
 	"github.com/vmihailenco/msgpack"
 
 	"fmt"
@@ -40,7 +40,7 @@ type chatroom struct {
 
 // Creates a chatroom, autogenerating all the keys for the chatroom
 func createChatroom() *chatroom {
-	id := uuid.New()
+	id := uuid.New().String()
 
 	groupPriv, err := bbssig.GenerateGroup(rand.Reader)
 

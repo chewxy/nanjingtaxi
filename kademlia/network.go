@@ -6,7 +6,7 @@ import (
 	"net"
 	"time"
 
-	"code.google.com/p/go-uuid/uuid"
+	"github.com/google/uuid"
 	"github.com/vmihailenco/msgpack"
 )
 
@@ -24,7 +24,7 @@ type Message struct {
 }
 
 func NewMessage() (Message, string) {
-	token := uuid.New()
+	token := uuid.New().String()
 	return Message{Token: token}, token
 }
 
